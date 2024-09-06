@@ -5,7 +5,6 @@ import traceback
 import psutil
 
 """
-This is my take on the problem. 
 The Script checks if you have an instance of qBitTorrent currently running and stops it if there is one. 
 Then the port is read from the ProtonVPN logs and the qBit settings are changed.
 In the end qBitTorrent is restarted.

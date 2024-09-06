@@ -5,4 +5,4 @@ You can also execute the same script to restart qBitTorrent with the correct por
 
 Modification Options:
 - If you changed the installation path of either program you have to change the "config_file" and "log_file" variables in the script. 
-- if you don't want the capability to restart qBit you can remove the "killQBit" method
+- if you don't want the capability to restart qBit you can remove the "killQBit" method. psutil is just used in the killQBit Method so you can remove the import and won't have to install it with pip
