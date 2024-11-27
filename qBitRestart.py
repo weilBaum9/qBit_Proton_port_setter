@@ -1,5 +1,4 @@
 import os
-import re
 import time
 import traceback
 import psutil
@@ -32,15 +31,13 @@ def killQBit():
 			print("No instances found, starting qBitTorrent")
 
 def searchPort() -> str:
-	port_number = ""
 	with open(log_file, "r") as f:
 		log_content = f.readlines()
 		for line in reversed(log_content):
-			match = re.search(r"Port pair (\d{1,5})", line)
-			if match:
-				port_number = match.group(1)
-				break
-	return port_number
+			if "Port pair" in line:
+				port_pair_info = line.split("Port pair ", 1)[1].split(",")[0]
+				match = port_pair_info.split("->")[1].strip()
+				return match
 
 
 # Replace the port number in the qBittorrent config file
