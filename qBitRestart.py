@@ -10,98 +10,102 @@ In the end qBitTorrent is restarted.
 """
 
 # Set up file paths
-config_file = os.getenv('APPDATA') + "\\qBittorrent\\qBittorrent.ini"
-log_file = os.getenv('LOCALAPPDATA') + "\\ProtonVPN\\Logs\\app-logs.txt"
+config_file = os.getenv("APPDATA") + "\\qBittorrent\\qBittorrent.ini"
+log_file = os.getenv("LOCALAPPDATA") + "\\Proton\\Proton VPN\\Logs\\client-logs.1.txt"
+
 
 def killQBit():
-	qBit_running = True
-	while qBit_running:
-		qBit_running = False
-		for proc in psutil.process_iter():
-			try:
-				if proc.name() == "qbittorrent.exe":
-					proc.terminate()
-					qBit_running = True
-			except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-				pass
-		if qBit_running:
-			print("Instances found, Terminating now! Next check in three seconds.")
-			time.sleep(3)
-		else:
-			print("No instances found, starting qBitTorrent")
+    qBit_running = True
+    while qBit_running:
+        qBit_running = False
+        for proc in psutil.process_iter():
+            try:
+                if proc.name() == "qbittorrent.exe":
+                    proc.terminate()
+                    qBit_running = True
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                pass
+        if qBit_running:
+            print("Instances found, Terminating now! Next check in three seconds.")
+            time.sleep(3)
+        else:
+            print("No instances found, starting qBitTorrent")
+
 
 def searchPort() -> str:
-	with open(log_file, "r") as f:
-		log_content = f.readlines()
-		for line in reversed(log_content):
-			if "Port pair" in line:
-				port_pair_info = line.split("Port pair ", 1)[1].split(",")[0]
-				match = port_pair_info.split("->")[1].strip()
-				return match
+    with open(log_file, "r") as f:
+        log_content = f.readlines()
+        for line in reversed(log_content):
+            if "Port pair" in line:
+                port_pair_info = line.split("Port pair ", 1)[1].split(",")[0]
+                match = port_pair_info.split("->")[1].strip()
+                return match
 
 
 # Replace the port number in the qBittorrent config file
 def qBitSettings(port_number):
-	if port_number:
-		with open(config_file, "r") as f:
-			config_content = f.read()
+    if port_number:
+        with open(config_file, "r") as f:
+            config_content = f.read()
 
-		with open(config_file, "w") as f:
-			for line in config_content.splitlines():
-				if line.startswith("Session\\Port="):
-					f.write("Session\\Port=" + port_number)
-					print("Port set")
-				else:
-					f.write(line)
-				f.write("\n")
+        with open(config_file, "w") as f:
+            for line in config_content.splitlines():
+                if line.startswith("Session\\Port="):
+                    f.write("Session\\Port=" + port_number)
+                    print("Port set")
+                else:
+                    f.write(line)
+                f.write("\n")
 
 
 def startQBit():
-	qbittorrent_exe = "C:\\Program Files\\qBittorrent\\qbittorrent.exe"
-	if os.path.exists(qbittorrent_exe):
-		os.startfile(qbittorrent_exe)
-		print("Start qBitTorrent")
-	else:
-		print("Error: qBittorrent executable not found.")
+    qbittorrent_exe = "C:\\Program Files\\qBittorrent\\qbittorrent.exe"
+    if os.path.exists(qbittorrent_exe):
+        os.startfile(qbittorrent_exe)
+        print("Start qBitTorrent")
+    else:
+        print("Error: qBittorrent executable not found.")
+
 
 def main() -> int:
-	# kill qBitTorrent
-	killQBit()
+    # kill qBitTorrent
+    killQBit()
 
-	# search for the port
-	try:
-		port = searchPort()
-	except FileNotFoundError:
-		print("ERROR: ProtonVPN log file not found")
-		return -1
-	if port == "":
-		print("ERROR: Port not found in ProtonVPN log file")
-		return -2
-	print("Port: " + port)
+    # search for the port
+    try:
+        port = searchPort()
+    except FileNotFoundError:
+        print("ERROR: ProtonVPN log file not found")
+        return -1
+    if port == "":
+        print("ERROR: Port not found in ProtonVPN log file")
+        return -2
+    print("Port: " + port)
 
-	# set port in qBit settings
-	try:
-		qBitSettings(port)
-	except FileNotFoundError:
-		print("ERROR: qBitTorrent settings file not found")
-		return -3
+    # set port in qBit settings
+    try:
+        qBitSettings(port)
+    except FileNotFoundError:
+        print("ERROR: qBitTorrent settings file not found")
+        return -3
 
-	# start qBitTorrent
-	try:
-		startQBit()
-	except Exception as e:
-		print("ERROR: Failed to start qBitTorrent")
-		return -4
-	
-	return 0
+    # start qBitTorrent
+    try:
+        startQBit()
+    except Exception as e:
+        print("ERROR: Failed to start qBitTorrent")
+        return -4
+
+    return 0
+
 
 # keep console window open, if there was an error
 try:
-	return_code = main()
+    return_code = main()
 except Exception as e:
-	traceback.print_exc() 
-	return_code = -5
+    traceback.print_exc()
+    return_code = -5
 
 if return_code < 0:
-	print("\npress <ENTER> to close the window")
-	input()
+    print("\npress <ENTER> to close the window")
+    input()
