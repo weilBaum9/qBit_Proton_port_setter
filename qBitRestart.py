@@ -11,7 +11,7 @@ In the end qBitTorrent is restarted.
 
 # Set up file paths
 config_file = os.getenv("APPDATA") + "\\qBittorrent\\qBittorrent.ini"
-log_file = os.getenv("LOCALAPPDATA") + "\\Proton\\Proton VPN\\Logs\\client-logs.1.txt"
+log_file = os.getenv("LOCALAPPDATA") + "\\Proton\\Proton VPN\\Logs\\client-logs.txt"
 
 
 def killQBit():
@@ -32,14 +32,27 @@ def killQBit():
             print("No instances found, starting qBitTorrent")
 
 
-def searchPort() -> str:
-    with open(log_file, "r") as f:
+def searchLogFile(file: str) -> str:
+    with open(file, "r") as f:
         log_content = f.readlines()
         for line in reversed(log_content):
             if "Port pair" in line:
                 port_pair_info = line.split("Port pair ", 1)[1].split(",")[0]
                 match = port_pair_info.split("->")[1].strip()
                 return match
+        return ""
+
+
+def searchPort() -> str:
+    port = searchLogFile(log_file)
+    if not port:
+        print("Port not found in main log file. Searching other possible locations.")
+    for i in range(1, 100):
+        if not port:
+            file = log_file.replace(".txt", f".{i}.txt")
+            print(f"Searching file {file}")
+            port = searchLogFile(file)
+    return port
 
 
 # Replace the port number in the qBittorrent config file
@@ -77,7 +90,7 @@ def main() -> int:
     except FileNotFoundError:
         print("ERROR: ProtonVPN log file not found")
         return -1
-    if port == "":
+    if not port:
         print("ERROR: Port not found in ProtonVPN log file")
         return -2
     print("Port: " + port)
