@@ -45,13 +45,18 @@ def searchLogFile(file: str) -> str:
 
 def searchPort() -> str:
     port = searchLogFile(log_file)
-    if not port:
-        print("Port not found in main log file. Searching other possible locations.")
-    for i in range(1, 100):
-        if not port:
-            file = log_file.replace(".txt", f".{i}.txt")
+    if port:
+        return port
+    print("Port not found in main log file. Searching other possible locations.")
+    for i in range(1, 1000):
+        file = log_file.replace(".txt", f".{i}.txt")
+        try:
             print(f"Searching file {file}")
             port = searchLogFile(file)
+        except FileNotFoundError:
+            return ""
+        if port:
+            return port
     return port
 
 
